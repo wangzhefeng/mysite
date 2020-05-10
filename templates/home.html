@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{# 页面标题 #}
+{% block title %}
+    我的网站|首页
+{% endblock %}
+
+{# 页面 CSS #}
+{% block header_extends %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block nav_home_active %}active{% endblock %}
+
+{# 页面内容 #}
+{% block content %}
+    <h3 class="home-content">欢迎访问 wangzhefeng 的网站</h3>
+{% endblock %}
