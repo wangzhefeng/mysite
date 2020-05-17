@@ -11,7 +11,7 @@ class BlogType(models.Model):
 
 class Blog(models.Model):
     title = models.CharField(max_length = 50)
-    blog_type = models.ForeignKey(BlogType, on_delete = models.DO_NOTHING)
+    blog_type = models.ForeignKey(BlogType, on_delete = models.DO_NOTHING, related_name = "blog")
     # content = models.TextField()
     content = RichTextUploadingField()
     author = models.ForeignKey(User, on_delete = models.DO_NOTHING)
