@@ -1,10 +1,15 @@
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
+from django.conf import settings
 from django.db.models import Count
 from django.contrib.contenttypes.models import ContentType
-from .models import Blog, BlogType
-from django.conf import settings
+
 from comment.models import Comment
+from comment.forms import CommentForm
+
+from .models import Blog, BlogType
+# from read_statistics.utils import get_seven_days_read_data, get_today_hot_data, get_yesterday_data
+# from user.forms import LoginForm
 
 
 def get_blog_list_common_data(request, blogs_all_list):
@@ -74,7 +79,6 @@ def blogs_with_type(request, blog_type_pk):
 
 
 def blogs_with_date(request, year, month):
-    #TODO
     blogs_all_list = Blog.objects.filter(created_time__year = year, created_time__month = month)
     context = get_blog_list_common_data(request, blogs_all_list)
     context["blogs_with_date"] = "%s年%s月" % (year, month)
@@ -92,5 +96,9 @@ def blog_detail(request, blog_pk):
     context["next_blog"] = Blog.objects.filter(created_time__lt = blog.created_time).first()
     context["user"] = request.user
     context["comments"] = comments
+
+    context["comment_form"] = CommentForm(initial = {"content_type": blog_content_type.model, "object_id": blog_pk})
+
+    response = render(request, "blog/blog_detail.html", context)
     
-    return render(request, "blog/blog_detail.html", context)
+    return response
