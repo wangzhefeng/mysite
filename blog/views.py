@@ -7,9 +7,11 @@ from django.contrib.contenttypes.models import ContentType
 from comment.models import Comment
 from comment.forms import CommentForm
 
-from .models import Blog, BlogType
+from .models import Blog, BlogType, ReadNum
 # from read_statistics.utils import get_seven_days_read_data, get_today_hot_data, get_yesterday_data
 # from user.forms import LoginForm
+
+from datetime import datetime
 
 
 def get_blog_list_common_data(request, blogs_all_list):
@@ -87,8 +89,20 @@ def blogs_with_date(request, year, month):
 
 
 def blog_detail(request, blog_pk):
-    context = {}
     blog = get_object_or_404(Blog, pk = blog_pk)
+    if not request.COOKIES.get("blog_%s_readed" % blog_pk):
+        if ReadNum.objects.filter(blog = blog).count():
+            # 存在记录
+            readnum = ReadNum.objects.get(blog = blog)
+        else:
+            # 不存在对应的记录
+            readnum = ReadNum(blog = blog)
+        
+        # 计数加1
+        readnum.read_num += 1
+        readnum.save()
+
+    context = {}
     blog_content_type = ContentType.objects.get_for_model(blog)
     comments = Comment.objects.filter(content_type = blog_content_type, object_id = blog.pk)
     context["blog"] = blog
@@ -96,9 +110,14 @@ def blog_detail(request, blog_pk):
     context["next_blog"] = Blog.objects.filter(created_time__lt = blog.created_time).first()
     context["user"] = request.user
     context["comments"] = comments
-
     context["comment_form"] = CommentForm(initial = {"content_type": blog_content_type.model, "object_id": blog_pk})
 
     response = render(request, "blog/blog_detail.html", context)
+    response.set_cookie(
+        "blog_%s_readed" % blog_pk, 
+        "true", 
+        # max_age = 60, 
+        # expires = datetime
+    )
     
     return response
